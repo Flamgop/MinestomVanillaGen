@@ -3,12 +3,11 @@ package net.flamgop.generator;
 import lombok.Getter;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.instance.Chunk;
+import net.minestom.server.instance.ChunkPopulator;
 import net.minestom.server.instance.batch.ChunkBatch;
 import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.biomes.Biome;
 import net.minestom.server.world.biomes.BiomeEffects;
-
-import java.util.function.BiConsumer;
 
 public class CustomBiome {
 
@@ -36,10 +35,10 @@ public class CustomBiome {
     @Getter private final Biome.Precipitation precipitation;
     @Getter private final Biome.TemperatureModifier temperatureModifier;
     // This is custom, I'm not sure a better way to implement it lol
-    @Getter private final BiConsumer<ChunkBatch, Chunk> biomePopulator;
+    @Getter private final ChunkPopulator biomePopulator;
     private final Biome biome;
 
-    public CustomBiome(NamespaceID name, float depth, float temperature, float scale, float downfall, Biome.Category category, BiomeEffects effects, Biome.Precipitation precipitation, Biome.TemperatureModifier temperatureModifier, BiConsumer<ChunkBatch, Chunk> biomePopulator) {
+    public CustomBiome(NamespaceID name, float depth, float temperature, float scale, float downfall, Biome.Category category, BiomeEffects effects, Biome.Precipitation precipitation, Biome.TemperatureModifier temperatureModifier, ChunkPopulator biomePopulator) {
         this.category = category;
         this.depth = depth;
         this.downfall = downfall;
@@ -54,7 +53,7 @@ public class CustomBiome {
         MinecraftServer.getBiomeManager().addBiome(biome);
     }
 
-    public CustomBiome(Biome biome, BiConsumer<ChunkBatch, Chunk> biomePopulator) {
+    public CustomBiome(Biome biome, ChunkPopulator biomePopulator) {
         this(biome.name(), biome.depth(), biome.temperature(), biome.scale(), biome.downfall(), biome.category(), biome.effects(), biome.precipitation(), biome.temperatureModifier(), biomePopulator);
     }
 
@@ -63,7 +62,7 @@ public class CustomBiome {
     }
 
     public void apply(ChunkBatch batch, Chunk chunk) {
-        biomePopulator.accept(batch, chunk);
+        biomePopulator.populateChunk(batch, chunk);
     }
 
     public Biome toBiome() {
@@ -80,7 +79,7 @@ public class CustomBiome {
         private BiomeEffects effects = DEFAULT_EFFECTS;
         private Biome.Precipitation precipitation = Biome.Precipitation.RAIN;
         private Biome.TemperatureModifier temperatureModifier = Biome.TemperatureModifier.NONE;
-        private BiConsumer<ChunkBatch, Chunk> biomePopulator;
+        private ChunkPopulator biomePopulator = (batch, chunk) -> { /*default biome populator*/ };
 
         Builder() {
         }
@@ -130,7 +129,7 @@ public class CustomBiome {
             return this;
         }
 
-        public Builder biomePopulator(BiConsumer<ChunkBatch, Chunk> biomePopulator) {
+        public Builder biomePopulator(ChunkPopulator biomePopulator) {
             this.biomePopulator = biomePopulator;
             return this;
         }
